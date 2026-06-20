@@ -607,10 +607,30 @@ const CHORD_TYPES = [
 // ═══════════════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════════════
-function chromaticNote(semitone, useFlats) {
-  const s = ((semitone % 12) + 12) % 12;
-  return useFlats ? CHROMATIC_FLAT[s] : CHROMATIC_SHARP[s];
-}
+
+// Key-aware spelling: for every root we define the 12 chromatic
+// pitches in the spelling that matches that key's scale convention.
+// Sharp keys use sharps; flat keys use flats; enharmonic keys pick
+// the most common jazz convention.
+const KEY_SPELLING = {
+  "C":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "G":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "D":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "A":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "E":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "B":  ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "F#": ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "F":  ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "Bb": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "Eb": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "Ab": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "Db": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "Gb": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  // Enharmonic aliases
+  "C#": ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+  "G#": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+  "D#": ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"],
+};
 
 function noteIndex(noteName) {
   let i = CHROMATIC_SHARP.indexOf(noteName);
@@ -618,24 +638,44 @@ function noteIndex(noteName) {
   return i;
 }
 
-function transposeNote(concertNote, semitones, useFlats) {
+// Spell a pitch (semitone 0–11) in the context of a given root key
+function spellNote(semitone, rootKey) {
+  const s = ((semitone % 12) + 12) % 12;
+  const table = KEY_SPELLING[rootKey] || CHROMATIC_FLAT;
+  return table[s];
+}
+
+// Transpose a named note by semitones, spelling result in targetKey context
+function transposeNote(concertNote, semitones, targetKey) {
   const ci = noteIndex(concertNote);
   if (ci === -1) return concertNote;
-  return chromaticNote(ci + semitones, useFlats);
+  return spellNote(ci + semitones, targetKey);
 }
 
+// Get the written root name for a concert key on a given instrument,
+// spelled correctly for the written key's own scale
 function getWrittenKey(concertKey, inst) {
-  return transposeNote(concertKey, TRANS[inst], USE_FLATS[inst]);
+  const ci = noteIndex(concertKey);
+  if (ci === -1) return concertKey;
+  // First get the raw semitone of the written root
+  const writtenSemitone = (ci + TRANS[inst]) % 12;
+  // Spell it using the concert key's flat/sharp preference,
+  // then look up what key that written root implies
+  const tempSpelling = USE_FLATS[inst] ? CHROMATIC_FLAT : CHROMATIC_SHARP;
+  const writtenRoot = tempSpelling[((writtenSemitone % 12) + 12) % 12];
+  return writtenRoot;
 }
 
-function getChordNotes(writtenRoot, chord, inst) {
+// Get chord notes spelled correctly for the written root's key
+function getChordNotes(writtenRoot, chord) {
   const ri = noteIndex(writtenRoot);
-  return chord.intervals.map(iv => chromaticNote(ri + iv, USE_FLATS[inst]));
+  return chord.intervals.map(iv => spellNote(ri + iv, writtenRoot));
 }
 
+// Get concert chord notes spelled correctly for the concert root's key
 function getConcertNotes(concertRoot, chord) {
   const ri = noteIndex(concertRoot);
-  return chord.intervals.map(iv => chromaticNote(ri + iv, true));
+  return chord.intervals.map(iv => spellNote(ri + iv, concertRoot));
 }
 
 function cardId(concertKey, chordId) { return `${concertKey}__${chordId}`; }
@@ -825,7 +865,7 @@ function nextCard() {
 function renderCard() {
   const chord = CHORD_TYPES.find(c => c.id === currentCard.chordId);
   const writtenRoot = getWrittenKey(currentCard.concertKey, inst);
-  const writtenNotes = getChordNotes(writtenRoot, chord, inst);
+  const writtenNotes = getChordNotes(writtenRoot, chord);
   const concertNotes = getConcertNotes(currentCard.concertKey, chord);
 
   // Card type chip
@@ -917,7 +957,7 @@ function grade(g) {
   sessionHistory.push({
     writtenRoot, chordId: currentCard.chordId, chordName: chord.name,
     symbol: chord.symbol, grade: g,
-    notes: getChordNotes(writtenRoot, chord, inst)
+    notes: getChordNotes(writtenRoot, chord)
   });
 
   updateSessionUI();
