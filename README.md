@@ -1,2 +1,2 @@
 # Benawilson206.github.io
-first repo for Ethiopian Knits 
+first repo for music exercises
