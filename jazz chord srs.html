@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chord SRS">
+<title>Jazz Chord SRS</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;--bg4:#2e2e2e;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#f0f0f0;--text2:#a0a0a0;--text3:#606060;
+  --gold:#c8922a;--gold2:#e8b44a;--gold-dim:#3a2800;
+  --green:#2a9a5a;--green2:#1a3a28;--green-t:#4aba7a;
+  --blue:#2a6aaa;--blue2:#0e2040;--blue-t:#6aaae0;
+  --orange:#c86020;--orange2:#3a1800;--orange-t:#e8904a;
+  --red:#b03030;--red2:#3a0e0e;--red-t:#e05050;
+  --purple:#7a3aaa;--purple2:#200a30;--purple-t:#b07ae0;
+  --radius:12px;--radius-lg:18px;--radius-xl:24px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,20px);
+  -webkit-text-size-adjust:100%;}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ══════════════════════════════════════════
+   SETUP SCREEN
+══════════════════════════════════════════ */
+#setup-screen{overflow-y:auto;}
+.setup-hero{
+  padding:32px 20px 24px;
+  background:linear-gradient(160deg,#1a1200 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+}
+.setup-hero h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--gold2);margin-bottom:4px;}
+.setup-hero p{font-size:13px;color:var(--text3);line-height:1.5;}
+
+.setup-body{padding:20px;display:flex;flex-direction:column;gap:22px;}
+
+.setup-section-label{
+  font-size:11px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:10px;
+}
+
+.seg-group{display:flex;gap:6px;flex-wrap:wrap;}
+.seg-btn{
+  flex:1;min-width:80px;padding:11px 8px;
+  border:1px solid var(--border2);border-radius:var(--radius);
+  background:var(--bg2);color:var(--text2);
+  font-size:13px;font-weight:500;text-align:center;
+  transition:all 0.15s;
+}
+.seg-btn .sub{display:block;font-size:10px;color:var(--text3);margin-top:2px;font-weight:400;}
+.seg-btn.active{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold);}
+.seg-btn.active .sub{color:var(--gold);opacity:0.7;}
+
+.new-cards-row{display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.new-cards-label{font-size:14px;color:var(--text);}
+.new-cards-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.stepper{display:flex;align-items:center;gap:12px;}
+.step-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text);font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center;}
+.step-val{font-size:20px;font-weight:700;color:var(--gold2);min-width:28px;text-align:center;}
+
+.today-summary{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+}
+.today-row{display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);}
+.today-row:last-child{border-bottom:none;}
+.today-row .val{font-weight:700;color:var(--text);font-size:15px;}
+.today-row .val.gold{color:var(--gold2);}
+.today-row .val.green{color:var(--green-t);}
+
+.start-btn{
+  width:100%;padding:17px;border:none;border-radius:var(--radius-lg);
+  background:var(--gold);color:#0a0600;font-size:17px;font-weight:800;
+  letter-spacing:-0.2px;transition:opacity 0.15s;
+}
+.start-btn:disabled{opacity:0.25;}
+
+.data-row{display:flex;gap:8px;}
+.data-btn{
+  flex:1;padding:12px 8px;border:1px solid var(--border2);
+  border-radius:var(--radius);background:var(--bg2);
+  color:var(--text2);font-size:13px;text-align:center;
+}
+
+/* ══════════════════════════════════════════
+   SESSION SCREEN
+══════════════════════════════════════════ */
+.session-header{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;background:var(--bg);
+  position:sticky;top:0;z-index:10;
+}
+.sess-back{background:none;border:none;color:var(--gold);font-size:14px;padding:4px 0;}
+.prog-wrap{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.prog-bar{height:100%;background:var(--gold);border-radius:2px;transition:width 0.4s ease;}
+.sess-count{font-size:12px;color:var(--text2);min-width:44px;text-align:right;font-variant-numeric:tabular-nums;}
+
+.card-zone{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  padding:20px 16px 16px;gap:14px;overflow-y:auto;
+}
+
+.new-chip{
+  font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;
+  background:var(--blue2);color:var(--blue-t);border:1px solid var(--blue);
+}
+.review-chip{
+  font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;
+  background:var(--gold-dim);color:var(--gold2);border:1px solid var(--gold);
+}
+.requeue-chip{
+  font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;
+  background:var(--red2);color:var(--red-t);border:1px solid var(--red);
+}
+
+.streak-line{font-size:12px;color:var(--text3);height:16px;text-align:center;}
+.streak-line.hot{color:var(--gold2);font-weight:600;}
+
+/* THE CARD */
+.flash-card{
+  width:100%;max-width:380px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--radius-xl);padding:28px 22px 22px;
+  text-align:center;position:relative;
+  transition:background 0.3s;
+}
+.flash-card.flash-easy{animation:fEasy 0.4s forwards;}
+.flash-card.flash-got{animation:fGot 0.4s forwards;}
+.flash-card.flash-hard{animation:fHard 0.4s forwards;}
+.flash-card.flash-blank{animation:fBlank 0.4s forwards;}
+@keyframes fEasy{0%{background:var(--green2)}100%{background:var(--bg2)}}
+@keyframes fGot{0%{background:#0e2a18}100%{background:var(--bg2)}}
+@keyframes fHard{0%{background:var(--orange2)}100%{background:var(--bg2)}}
+@keyframes fBlank{0%{background:var(--red2)}100%{background:var(--bg2)}}
+
+.card-instrument{font-size:11px;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:20px;}
+
+.chord-display{margin-bottom:8px;}
+.chord-root{font-size:72px;font-weight:900;letter-spacing:-3px;color:var(--gold2);line-height:1;}
+.chord-quality{font-size:28px;font-weight:600;color:var(--text);margin-top:4px;letter-spacing:-0.5px;}
+.chord-full-symbol{font-size:13px;color:var(--text3);margin-top:6px;font-style:italic;}
+
+.card-prompt{font-size:13px;color:var(--text3);margin-top:16px;line-height:1.5;}
+
+/* ANSWER BLOCK */
+.answer-block{display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);text-align:left;}
+.answer-block.show{display:block;}
+
+.answer-section{margin-bottom:14px;}
+.answer-section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+
+.notes-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.note-pill{
+  padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;
+  background:var(--bg3);color:var(--text);border:1px solid var(--border2);
+}
+.note-pill.root{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold);}
+.note-pill.tension{background:var(--purple2);color:var(--purple-t);border-color:var(--purple);}
+
+.interval-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.interval-pill{
+  padding:4px 9px;border-radius:20px;font-size:11px;font-weight:500;
+  background:var(--bg4);color:var(--text2);border:1px solid var(--border);
+}
+
+.concert-block{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 12px;
+}
+.concert-label{font-size:10px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.concert-symbol{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.concert-notes{display:flex;gap:5px;flex-wrap:wrap;}
+.concert-note{padding:4px 9px;border-radius:20px;font-size:12px;
+  background:var(--bg4);color:var(--text2);border:1px solid var(--border);}
+
+.chord-tip-block{
+  font-size:12px;color:var(--text3);line-height:1.6;
+  border-top:1px solid var(--border);padding-top:12px;font-style:italic;
+}
+
+/* REVEAL BTN */
+.reveal-btn{
+  width:100%;max-width:380px;padding:15px;
+  border:1px solid var(--border2);border-radius:var(--radius-lg);
+  background:var(--bg2);color:var(--text);font-size:15px;font-weight:500;
+}
+
+/* GRADE BUTTONS */
+.grade-row{display:none;width:100%;max-width:380px;gap:6px;}
+.grade-row.show{display:flex;}
+.grade-btn{
+  flex:1;padding:12px 4px;border:none;border-radius:var(--radius);
+  font-size:12px;font-weight:700;text-align:center;line-height:1.3;
+}
+.grade-btn .grade-key{font-size:16px;display:block;margin-bottom:3px;}
+.grade-btn.blank{background:var(--red2);color:var(--red-t);}
+.grade-btn.hard{background:var(--orange2);color:var(--orange-t);}
+.grade-btn.got{background:var(--green2);color:var(--green-t);}
+.grade-btn.easy{background:var(--gold-dim);color:var(--gold2);}
+
+/* MINI STATS */
+.mini-stats{display:flex;gap:8px;width:100%;max-width:380px;}
+.mini-stat{
+  flex:1;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 6px;text-align:center;
+}
+.mini-stat .sv{font-size:22px;font-weight:800;color:var(--text);}
+.mini-stat .sl{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-top:2px;}
+
+/* ══════════════════════════════════════════
+   SUMMARY SCREEN
+══════════════════════════════════════════ */
+#summary-screen{overflow-y:auto;}
+.summary-hero{
+  padding:28px 20px 20px;
+  background:linear-gradient(160deg,#1a1200,var(--bg));
+  border-bottom:1px solid var(--border);text-align:center;
+}
+.summary-pct{font-size:80px;font-weight:900;letter-spacing:-4px;color:var(--gold2);line-height:1;}
+.summary-label{font-size:14px;color:var(--text2);margin-top:6px;}
+
+.summary-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 12px;text-align:center;
+}
+.stat-card .sv{font-size:28px;font-weight:800;color:var(--text);}
+.stat-card .sl{font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-top:4px;}
+.stat-card.gold .sv{color:var(--gold2);}
+.stat-card.green .sv{color:var(--green-t);}
+.stat-card.red .sv{color:var(--red-t);}
+.stat-card.blue .sv{color:var(--blue-t);}
+
+.summary-section-label{
+  font-size:11px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:10px;
+}
+
+.breakdown-list{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+}
+.bk-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;
+}
+.bk-item:last-child{border-bottom:none;}
+.bk-chord{font-weight:600;color:var(--text);}
+.bk-notes{font-size:11px;color:var(--text3);margin-top:1px;}
+.bk-grade{font-size:12px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.bk-grade.easy{background:var(--gold-dim);color:var(--gold2);}
+.bk-grade.got{background:var(--green2);color:var(--green-t);}
+.bk-grade.hard{background:var(--orange2);color:var(--orange-t);}
+.bk-grade.blank{background:var(--red2);color:var(--red-t);}
+
+.mastery-bar-wrap{margin-bottom:4px;}
+.mastery-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px;}
+.mastery-bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.mastery-bar-fill{height:100%;background:var(--gold);border-radius:3px;transition:width 0.6s ease;}
+
+.again-btn{
+  width:100%;padding:16px;border:none;border-radius:var(--radius-lg);
+  background:var(--gold);color:#0a0600;font-size:16px;font-weight:800;
+}
+.home-btn{
+  width:100%;padding:14px;border:1px solid var(--border2);
+  border-radius:var(--radius-lg);background:transparent;
+  color:var(--text2);font-size:14px;
+}
+
+/* ══════════════════════════════════════════
+   STATS SCREEN
+══════════════════════════════════════════ */
+#stats-screen{overflow-y:auto;}
+.stats-header{
+  padding:16px 18px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:baseline;justify-content:space-between;
+}
+.stats-header h2{font-size:18px;font-weight:700;color:var(--gold2);}
+.stats-back{background:none;border:none;color:var(--gold);font-size:14px;}
+.stats-body{padding:16px;display:flex;flex-direction:column;gap:16px;}
+
+.chord-mastery-item{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 14px;
+}
+.cmi-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.cmi-name{font-size:14px;font-weight:600;color:var(--text);}
+.cmi-pct{font-size:13px;color:var(--gold2);font-weight:700;}
+.cmi-track{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.cmi-fill{height:100%;background:var(--gold);border-radius:2px;}
+.cmi-keys{display:flex;gap:4px;flex-wrap:wrap;}
+.cmi-key{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;}
+.cmi-key.mastered{background:var(--green2);color:var(--green-t);border:1px solid var(--green);}
+.cmi-key.learning{background:var(--gold-dim);color:var(--gold2);border:1px solid var(--gold);}
+.cmi-key.new{background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
+
+.unlock-banner{
+  background:var(--blue2);border:1px solid var(--blue);
+  border-radius:var(--radius-lg);padding:16px;text-align:center;
+}
+.unlock-banner h3{font-size:15px;font-weight:700;color:var(--blue-t);margin-bottom:6px;}
+.unlock-banner p{font-size:12px;color:var(--text2);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-hero">
+    <h1>Jazz Chord SRS</h1>
+    <p>Spaced repetition for saxophone — chord symbols to fingerings</p>
+  </div>
+  <div class="setup-body">
+
+    <div>
+      <div class="setup-section-label">Your instrument transposition</div>
+      <div class="seg-group">
+        <button class="seg-btn active" data-inst="Eb" onclick="setInst(this)">
+          E♭
+          <span class="sub">Alto / Bari</span>
+        </button>
+        <button class="seg-btn" data-inst="Bb" onclick="setInst(this)">
+          B♭
+          <span class="sub">Tenor / Soprano</span>
+        </button>
+        <button class="seg-btn" data-inst="C" onclick="setInst(this)">
+          C
+          <span class="sub">Flute / Piano</span>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="setup-section-label">New cards per session</div>
+      <div class="new-cards-row">
+        <div>
+          <div class="new-cards-label">New chords today</div>
+          <div class="new-cards-sub">Introduced in priority order</div>
+        </div>
+        <div class="stepper">
+          <button class="step-btn" onclick="adjustNew(-5)">−</button>
+          <div class="step-val" id="new-count-display">10</div>
+          <button class="step-btn" onclick="adjustNew(5)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="setup-section-label">Today's session</div>
+      <div class="today-summary" id="today-summary">
+        <div class="today-row"><span>Due for review</span><span class="val gold" id="due-count">—</span></div>
+        <div class="today-row"><span>New cards</span><span class="val blue-t" id="new-today-count">—</span></div>
+        <div class="today-row"><span>Total this session</span><span class="val" id="total-count">—</span></div>
+        <div class="today-row"><span>Cards in deck</span><span class="val" id="deck-count">—</span></div>
+        <div class="today-row"><span>Overall mastery</span><span class="val green" id="mastery-pct">—</span></div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startSession()">Begin session</button>
+
+    <div class="data-row">
+      <button class="data-btn" onclick="showStats()">📊 Progress</button>
+      <button class="data-btn" onclick="exportData()">⬇ Export</button>
+      <button class="data-btn" onclick="triggerImport()">⬆ Import</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+
+  </div>
+</div>
+
+<!-- ══ SESSION SCREEN ══ -->
+<div id="session-screen" class="screen">
+  <div class="session-header">
+    <button class="sess-back" onclick="endSession()">← Home</button>
+    <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="sess-count" id="sess-count">0/0</div>
+  </div>
+
+  <div class="card-zone" id="card-zone">
+    <div id="card-type-chip"></div>
+    <div class="streak-line" id="streak-line"></div>
+
+    <div class="flash-card" id="flash-card">
+      <div class="card-instrument" id="card-instrument">Written pitch — E♭ instrument</div>
+      <div class="chord-display">
+        <div class="chord-root" id="chord-root">D</div>
+        <div class="chord-quality" id="chord-quality">Major 7</div>
+        <div class="chord-full-symbol" id="chord-full-symbol">Dmaj7 (written)</div>
+      </div>
+      <div class="card-prompt">Play this chord as an arpeggio on your horn,<br>then grade yourself honestly.</div>
+
+      <div class="answer-block" id="answer-block">
+
+        <div class="answer-section">
+          <div class="answer-section-label">Notes to play (written pitch)</div>
+          <div class="notes-pills" id="notes-pills"></div>
+        </div>
+
+        <div class="answer-section">
+          <div class="answer-section-label">Intervals</div>
+          <div class="interval-pills" id="interval-pills"></div>
+        </div>
+
+        <div class="answer-section">
+          <div class="concert-block" id="concert-block"></div>
+        </div>
+
+        <div class="chord-tip-block" id="chord-tip-block"></div>
+
+      </div>
+    </div>
+
+    <button class="reveal-btn" id="reveal-btn" onclick="revealAnswer()">Tap to reveal →</button>
+
+    <div class="grade-row" id="grade-row">
+      <button class="grade-btn blank" onclick="grade(0)">
+        <span class="grade-key">✗</span>Blank
+      </button>
+      <button class="grade-btn hard" onclick="grade(3)">
+        <span class="grade-key">〜</span>Hard
+      </button>
+      <button class="grade-btn got" onclick="grade(4)">
+        <span class="grade-key">✓</span>Got it
+      </button>
+      <button class="grade-btn easy" onclick="grade(5)">
+        <span class="grade-key">★</span>Easy
+      </button>
+    </div>
+
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="sv" id="ms-correct">0</div><div class="sl">Correct</div></div>
+      <div class="mini-stat"><div class="sv" id="ms-missed">0</div><div class="sl">Missed</div></div>
+      <div class="mini-stat"><div class="sv" id="ms-streak">0</div><div class="sl">Streak</div></div>
+      <div class="mini-stat"><div class="sv" id="ms-remain">0</div><div class="sl">Left</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUMMARY SCREEN ══ -->
+<div id="summary-screen" class="screen">
+  <div class="summary-hero">
+    <div class="summary-pct" id="sum-pct">—%</div>
+    <div class="summary-label" id="sum-label"></div>
+  </div>
+  <div class="summary-body">
+    <div class="stat-grid" id="sum-stat-grid"></div>
+    <div>
+      <div class="summary-section-label">Overall mastery progress</div>
+      <div id="sum-mastery-bars"></div>
+    </div>
+    <div>
+      <div class="summary-section-label">This session</div>
+      <div class="breakdown-list" id="sum-breakdown"></div>
+    </div>
+    <button class="again-btn" onclick="startSession()">Another session</button>
+    <button class="home-btn" onclick="goHome()">← Home</button>
+  </div>
+</div>
+
+<!-- ══ STATS SCREEN ══ -->
+<div id="stats-screen" class="screen">
+  <div class="stats-header">
+    <h2>Progress</h2>
+    <button class="stats-back" onclick="goHome()">← Home</button>
+  </div>
+  <div class="stats-body" id="stats-body"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CHORD DATA
+// ═══════════════════════════════════════════════════════════
+const CHROMATIC_SHARP = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const CHROMATIC_FLAT  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+
+// Keys: concert pitch, shown in written pitch per instrument
+// Priority order for introduction
+const CONCERT_KEYS = [
+  {c:"F",  prio:1}, {c:"Bb", prio:1}, {c:"Eb", prio:1},
+  {c:"C",  prio:2}, {c:"G",  prio:2}, {c:"Ab", prio:2},
+  {c:"Db", prio:3}, {c:"D",  prio:3}, {c:"E",  prio:3},
+  {c:"B",  prio:3}, {c:"Gb", prio:3}, {c:"A",  prio:3},
+];
+
+// Transposition offsets (semitones added to concert to get written)
+const TRANS = { "Eb": 9, "Bb": 2, "C": 0 };
+
+// Enharmonic preference per instrument
+const USE_FLATS = { "Eb": true, "Bb": true, "C": true };
+
+const CHORD_TYPES = [
+  // WAVE 1 — core
+  {
+    id:"maj7", wave:1, name:"Major 7", symbol:"maj7",
+    intervals:[0,4,7,11], inames:["R","M3","5","M7"],
+    tip:"Bright and stable — the I chord in major keys. The M7 is a half-step below the octave: let it ring.",
+    prio:1
+  },
+  {
+    id:"dom7", wave:1, name:"Dominant 7", symbol:"7",
+    intervals:[0,4,7,10], inames:["R","M3","5","m7"],
+    tip:"The workhorse of jazz and ska. Tension that wants to resolve down a 4th. The m7 is the defining note.",
+    prio:1
+  },
+  {
+    id:"min7", wave:1, name:"Minor 7", symbol:"m7",
+    intervals:[0,3,7,10], inames:["R","m3","5","m7"],
+    tip:"The ii chord in major keys. The m3 colors it dark — make sure it speaks clearly against the root.",
+    prio:1
+  },
+  {
+    id:"hdim", wave:1, name:"Half Diminished", symbol:"ø7",
+    intervals:[0,3,6,10], inames:["R","m3","b5","m7"],
+    tip:"The ii chord in minor keys. The b5 creates dense tension — perfect before a dominant 7.",
+    prio:2
+  },
+  // WAVE 2
+  {
+    id:"dim7", wave:2, name:"Diminished 7", symbol:"°7",
+    intervals:[0,3,6,9], inames:["R","m3","b5","bb7"],
+    tip:"Fully symmetrical — every note is a m3 apart. It can resolve in 4 directions. All inversions are also dim7 chords.",
+    prio:1
+  },
+  {
+    id:"mmaj7", wave:2, name:"Minor Major 7", symbol:"mM7",
+    intervals:[0,3,7,11], inames:["R","m3","5","M7"],
+    tip:"The M7 against the m3 creates a unique dark tension. Don Drummond's signature sound. Hold the top note.",
+    prio:2
+  },
+  {
+    id:"maj6", wave:2, name:"Major 6", symbol:"6",
+    intervals:[0,4,7,9], inames:["R","M3","5","M6"],
+    tip:"Warm and old-school. The 6th replaces the 7th. Common in early jazz and ska ballads.",
+    prio:1
+  },
+  {
+    id:"min6", wave:2, name:"Minor 6", symbol:"m6",
+    intervals:[0,3,7,9], inames:["R","m3","5","M6"],
+    tip:"Bittersweet — minor feel with a major 6. The M6 gives it a wistful quality. Common in Jamaican minor-key repertoire.",
+    prio:2
+  },
+  // WAVE 3 — extensions (unlocked after waves 1+2 mastered)
+  {
+    id:"dom9", wave:3, name:"Dominant 9", symbol:"9",
+    intervals:[0,4,7,10,14], inames:["R","M3","5","m7","M9"],
+    tip:"Dom7 with an added major 9th. Rich and full. Often drop the 5th when voicing.",
+    prio:1
+  },
+  {
+    id:"maj9", wave:3, name:"Major 9", symbol:"maj9",
+    intervals:[0,4,7,11,14], inames:["R","M3","5","M7","M9"],
+    tip:"Lush and bright. The M9 and M7 together create an open, airy sound.",
+    prio:1
+  },
+  {
+    id:"min9", wave:3, name:"Minor 9", symbol:"m9",
+    intervals:[0,3,7,10,14], inames:["R","m3","5","m7","M9"],
+    tip:"Warm and complex. The M9 softens the minor quality beautifully.",
+    prio:1
+  },
+  {
+    id:"dom7b9", wave:3, name:"Dom 7♭9", symbol:"7b9",
+    intervals:[0,4,7,10,13], inames:["R","M3","5","m7","m9"],
+    tip:"Maximum tension. The b9 against the root is a m9 — extremely dissonant, demands resolution. Common in minor ii-V-i.",
+    prio:2
+  },
+  {
+    id:"dom7s11", wave:3, name:"Dom 7♯11", symbol:"7#11",
+    intervals:[0,4,7,10,18], inames:["R","M3","5","m7","#11"],
+    tip:"The Lydian dominant sound. The #11 (tritone above the root) creates a floating, unresolved tension.",
+    prio:2
+  },
+  {
+    id:"sus4", wave:3, name:"Sus 4", symbol:"sus4",
+    intervals:[0,5,7,10], inames:["R","P4","5","m7"],
+    tip:"The 4th replaces the 3rd — ambiguous major/minor. Often resolves when the 4th drops to the 3rd.",
+    prio:1
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function chromaticNote(semitone, useFlats) {
+  const s = ((semitone % 12) + 12) % 12;
+  return useFlats ? CHROMATIC_FLAT[s] : CHROMATIC_SHARP[s];
+}
+
+function noteIndex(noteName) {
+  let i = CHROMATIC_SHARP.indexOf(noteName);
+  if (i === -1) i = CHROMATIC_FLAT.indexOf(noteName);
+  return i;
+}
+
+function transposeNote(concertNote, semitones, useFlats) {
+  const ci = noteIndex(concertNote);
+  if (ci === -1) return concertNote;
+  return chromaticNote(ci + semitones, useFlats);
+}
+
+function getWrittenKey(concertKey, inst) {
+  return transposeNote(concertKey, TRANS[inst], USE_FLATS[inst]);
+}
+
+function getChordNotes(writtenRoot, chord, inst) {
+  const ri = noteIndex(writtenRoot);
+  return chord.intervals.map(iv => chromaticNote(ri + iv, USE_FLATS[inst]));
+}
+
+function getConcertNotes(concertRoot, chord) {
+  const ri = noteIndex(concertRoot);
+  return chord.intervals.map(iv => chromaticNote(ri + iv, true));
+}
+
+function cardId(concertKey, chordId) { return `${concertKey}__${chordId}`; }
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function daysBetween(a, b) {
+  return Math.round((new Date(b) - new Date(a)) / 86400000);
+}
+
+function addDays(dateStr, n) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SM-2 ALGORITHM
+// ═══════════════════════════════════════════════════════════
+function sm2(card, grade) {
+  // grade: 0=blank,3=hard,4=got it,5=easy
+  let { ease, interval, reps } = card;
+
+  if (grade < 3) {
+    // Failed — reset
+    reps = 0;
+    interval = 1;
+  } else {
+    if (reps === 0) interval = 1;
+    else if (reps === 1) interval = 3;
+    else interval = Math.round(interval * ease);
+    reps += 1;
+  }
+
+  // Adjust ease factor
+  ease = ease + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02));
+  if (ease < 1.3) ease = 1.3;
+  if (ease > 3.0) ease = 3.0;
+
+  const due = grade < 3 ? today() : addDays(today(), interval);
+  return { ease: Math.round(ease * 100) / 100, interval, reps, due };
+}
+
+function isMastered(card) {
+  return card.reps >= 3 && card.interval >= 21 && card.ease >= 2.5;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════════════
+const STORAGE_KEY = "jazz_chord_srs_v1";
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { cards: {}, settings: { inst: "Eb", newPerSession: 10 }, meta: { created: today(), totalSessions: 0 } };
+}
+
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
+
+function getCard(concertKey, chordId) {
+  const id = cardId(concertKey, chordId);
+  if (!DB.cards[id]) {
+    DB.cards[id] = {
+      id, concertKey, chordId,
+      ease: 2.5, interval: 1, reps: 0,
+      due: null, // null = not yet introduced
+      history: []
+    };
+  }
+  return DB.cards[id];
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SESSION LOGIC
+// ═══════════════════════════════════════════════════════════
+let DB = loadData();
+let inst = DB.settings.inst || "Eb";
+let newPerSession = DB.settings.newPerSession || 10;
+
+// Session state
+let sessionQueue = [];
+let sessionHistory = [];
+let currentCard = null;
+let sessCorrect = 0, sessMissed = 0, sessStreak = 0, sessBestStreak = 0;
+let sessTotal = 0;
+
+function getAvailableWave() {
+  // Check if waves 1 and 2 are mastered (for wave 3 unlock)
+  const wave12Ids = CHORD_TYPES.filter(c => c.wave <= 2).map(c => c.id);
+  const allMastered = CONCERT_KEYS.every(k =>
+    wave12Ids.every(cid => {
+      const card = DB.cards[cardId(k.c, cid)];
+      return card && isMastered(card);
+    })
+  );
+  return allMastered ? 3 : 2;
+}
+
+function buildIntroOrder() {
+  // Returns ordered list of {concertKey, chordId} not yet introduced, respecting wave locks
+  const maxWave = getAvailableWave();
+  const available = CHORD_TYPES.filter(c => c.wave <= maxWave);
+
+  const order = [];
+  // Priority: wave 1 priority chords in priority keys first
+  for (let w = 1; w <= maxWave; w++) {
+    const wChords = available.filter(c => c.wave === w).sort((a,b) => a.prio - b.prio);
+    const kSorted = [...CONCERT_KEYS].sort((a,b) => a.prio - b.prio);
+    for (const chord of wChords) {
+      for (const k of kSorted) {
+        const card = getCard(k.c, chord.id);
+        if (card.due === null) order.push({ concertKey: k.c, chordId: chord.id });
+      }
+    }
+  }
+  return order;
+}
+
+function getDueCards() {
+  const t = today();
+  return Object.values(DB.cards).filter(c => c.due !== null && c.due <= t);
+}
+
+function buildSessionQueue() {
+  const due = getDueCards();
+  const intro = buildIntroOrder().slice(0, newPerSession);
+
+  // Introduce new cards (mark as due today)
+  intro.forEach(({concertKey, chordId}) => {
+    const card = getCard(concertKey, chordId);
+    if (card.due === null) card.due = today();
+  });
+  saveData();
+
+  // Combine: reviews first, then new
+  const dueNow = getDueCards();
+  // Shuffle reviews, keep intros in order
+  const reviews = dueNow.filter(c => !intro.find(i => cardId(i.concertKey,i.chordId) === c.id));
+  const newCards = intro.map(i => getCard(i.concertKey, i.chordId));
+
+  // Shuffle reviews
+  for (let i = reviews.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [reviews[i],reviews[j]] = [reviews[j],reviews[i]];
+  }
+
+  return [...reviews, ...newCards];
+}
+
+function startSession() {
+  DB.settings.inst = inst;
+  DB.settings.newPerSession = newPerSession;
+  DB.meta.totalSessions = (DB.meta.totalSessions || 0) + 1;
+  saveData();
+
+  sessionQueue = buildSessionQueue();
+  sessTotal = sessionQueue.length;
+  sessionHistory = [];
+  sessCorrect = 0; sessMissed = 0; sessStreak = 0; sessBestStreak = 0;
+  currentCard = null;
+
+  if (sessTotal === 0) {
+    alert("No cards due today! Come back tomorrow, or increase new cards per session.");
+    return;
+  }
+
+  showScreen('session-screen');
+  nextCard();
+}
+
+function nextCard() {
+  if (sessionQueue.length === 0) {
+    showSummary();
+    return;
+  }
+  currentCard = sessionQueue.shift();
+  renderCard();
+  updateSessionUI();
+}
+
+function renderCard() {
+  const chord = CHORD_TYPES.find(c => c.id === currentCard.chordId);
+  const writtenRoot = getWrittenKey(currentCard.concertKey, inst);
+  const writtenNotes = getChordNotes(writtenRoot, chord, inst);
+  const concertNotes = getConcertNotes(currentCard.concertKey, chord);
+
+  // Card type chip
+  const chip = document.getElementById('card-type-chip');
+  const isNew = currentCard.reps === 0;
+  const isRequeue = currentCard._requeued;
+  chip.innerHTML = isRequeue
+    ? `<div class="requeue-chip">↩ Re-queue</div>`
+    : isNew
+      ? `<div class="new-chip">✦ New card</div>`
+      : `<div class="review-chip">Review</div>`;
+
+  // Instrument label
+  const instLabels = {"Eb":"E♭ instrument (Alto / Bari)","Bb":"B♭ instrument (Tenor / Soprano)","C":"C instrument"};
+  document.getElementById('card-instrument').textContent = `Written pitch — ${instLabels[inst]}`;
+
+  // Chord display
+  document.getElementById('chord-root').textContent = writtenRoot;
+  document.getElementById('chord-quality').textContent = chord.name;
+  document.getElementById('chord-full-symbol').textContent = `${writtenRoot}${chord.symbol} (written)`;
+
+  // Answer block — notes
+  document.getElementById('notes-pills').innerHTML = writtenNotes.map((n,i) =>
+    `<span class="note-pill${i===0?' root':chord.intervals[i]>=10?' tension':''}">${n}</span>`
+  ).join('');
+
+  // Intervals
+  document.getElementById('interval-pills').innerHTML = chord.inames.map(iv =>
+    `<span class="interval-pill">${iv}</span>`
+  ).join('');
+
+  // Concert block
+  document.getElementById('concert-block').innerHTML = `
+    <div class="concert-label">Concert pitch equivalent</div>
+    <div class="concert-symbol">${currentCard.concertKey}${chord.symbol}</div>
+    <div class="concert-notes">${concertNotes.map(n => `<span class="concert-note">${n}</span>`).join('')}</div>
+  `;
+
+  // Tip
+  document.getElementById('chord-tip-block').textContent = chord.tip;
+
+  // Reset UI state
+  const fc = document.getElementById('flash-card');
+  fc.classList.remove('flash-easy','flash-got','flash-hard','flash-blank');
+  document.getElementById('answer-block').classList.remove('show');
+  document.getElementById('reveal-btn').style.display = '';
+  document.getElementById('grade-row').classList.remove('show');
+}
+
+function revealAnswer() {
+  document.getElementById('answer-block').classList.add('show');
+  document.getElementById('reveal-btn').style.display = 'none';
+  document.getElementById('grade-row').classList.add('show');
+}
+
+function grade(g) {
+  const chord = CHORD_TYPES.find(c => c.id === currentCard.chordId);
+  const writtenRoot = getWrittenKey(currentCard.concertKey, inst);
+
+  // Flash
+  const fc = document.getElementById('flash-card');
+  const flashClass = g===5?'flash-easy':g===4?'flash-got':g===3?'flash-hard':'flash-blank';
+  fc.classList.add(flashClass);
+
+  // Update card via SM-2
+  const updated = sm2(currentCard, g);
+  Object.assign(currentCard, updated);
+  currentCard.history = currentCard.history || [];
+  currentCard.history.push({ date: today(), grade: g });
+  DB.cards[currentCard.id] = currentCard;
+  saveData();
+
+  // Session stats
+  const correct = g >= 3;
+  if (correct) {
+    sessCorrect++;
+    sessStreak++;
+    if (sessStreak > sessBestStreak) sessBestStreak = sessStreak;
+  } else {
+    sessMissed++;
+    sessStreak = 0;
+    // Requeue after 3 cards
+    const clone = { ...currentCard, _requeued: true };
+    const pos = Math.min(3, sessionQueue.length);
+    sessionQueue.splice(pos, 0, clone);
+  }
+
+  // Track history for summary
+  sessionHistory.push({
+    writtenRoot, chordId: currentCard.chordId, chordName: chord.name,
+    symbol: chord.symbol, grade: g,
+    notes: getChordNotes(writtenRoot, chord, inst)
+  });
+
+  updateSessionUI();
+  updateStreak();
+  setTimeout(() => nextCard(), 350);
+}
+
+function updateSessionUI() {
+  const done = sessCorrect + sessMissed;
+  const pct = sessTotal > 0 ? (sessCorrect / sessTotal) * 100 : 0;
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('sess-count').textContent = `${sessCorrect}/${sessTotal}`;
+  document.getElementById('ms-correct').textContent = sessCorrect;
+  document.getElementById('ms-missed').textContent = sessMissed;
+  document.getElementById('ms-streak').textContent = sessStreak;
+  document.getElementById('ms-remain').textContent = sessionQueue.length;
+}
+
+function updateStreak() {
+  const el = document.getElementById('streak-line');
+  if (sessStreak >= 3) {
+    el.textContent = `🔥 ${sessStreak} in a row`;
+    el.classList.add('hot');
+  } else {
+    el.textContent = '';
+    el.classList.remove('hot');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SUMMARY
+// ═══════════════════════════════════════════════════════════
+function showSummary() {
+  showScreen('summary-screen');
+
+  const total = sessCorrect + sessMissed;
+  const pct = total > 0 ? Math.round((sessCorrect / total) * 100) : 100;
+  document.getElementById('sum-pct').textContent = pct + '%';
+
+  let msg = pct === 100 ? `Perfect session. Best streak: ${sessBestStreak}.`
+    : pct >= 80 ? `Strong session. Best streak: ${sessBestStreak}.`
+    : pct >= 60 ? `Solid effort. Keep drilling the misses.`
+    : `Tough session — the algorithm will bring those chords back soon.`;
+  document.getElementById('sum-label').textContent = msg;
+
+  // Stat grid
+  const allCards = Object.values(DB.cards).filter(c => c.due !== null);
+  const masteredCount = allCards.filter(isMastered).length;
+  const totalIntro = allCards.length;
+  document.getElementById('sum-stat-grid').innerHTML = `
+    <div class="stat-card gold"><div class="sv">${pct}%</div><div class="sl">Session score</div></div>
+    <div class="stat-card"><div class="sv">${sessBestStreak}</div><div class="sl">Best streak</div></div>
+    <div class="stat-card green"><div class="sv">${masteredCount}</div><div class="sl">Cards mastered</div></div>
+    <div class="stat-card blue"><div class="sv">${totalIntro}</div><div class="sl">Cards introduced</div></div>
+  `;
+
+  // Mastery bars per chord type
+  const maxWave = getAvailableWave();
+  const activeChords = CHORD_TYPES.filter(c => c.wave <= maxWave);
+  let barsHtml = '';
+  activeChords.forEach(chord => {
+    const keyCards = CONCERT_KEYS.map(k => DB.cards[cardId(k.c, chord.id)]).filter(Boolean);
+    const introduced = keyCards.filter(c => c.due !== null).length;
+    const mastered = keyCards.filter(isMastered).length;
+    const pctM = Math.round((mastered / 12) * 100);
+    barsHtml += `
+      <div class="mastery-bar-wrap">
+        <div class="mastery-bar-label"><span>${chord.name}</span><span>${mastered}/12 keys</span></div>
+        <div class="mastery-bar-track"><div class="mastery-bar-fill" style="width:${pctM}%"></div></div>
+      </div>`;
+  });
+  document.getElementById('sum-mastery-bars').innerHTML = barsHtml;
+
+  // Session breakdown
+  const seen = new Map();
+  [...sessionHistory].reverse().forEach(h => {
+    const k = h.writtenRoot + h.chordId;
+    if (!seen.has(k)) seen.set(k, h);
+  });
+  const items = [...seen.values()].sort((a,b) => a.grade - b.grade);
+  const gradeLabel = {0:'Blank',3:'Hard',4:'Got it',5:'Easy'};
+  const gradeClass = {0:'blank',3:'hard',4:'got',5:'easy'};
+  document.getElementById('sum-breakdown').innerHTML = items.map(h =>
+    `<div class="bk-item">
+      <div><div class="bk-chord">${h.writtenRoot}${h.symbol}</div><div class="bk-notes">${h.notes.join(' ')}</div></div>
+      <span class="bk-grade ${gradeClass[h.grade]}">${gradeLabel[h.grade]}</span>
+    </div>`
+  ).join('') || '<div class="bk-item">No cards played yet.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  STATS SCREEN
+// ═══════════════════════════════════════════════════════════
+function showStats() {
+  showScreen('stats-screen');
+  const body = document.getElementById('stats-body');
+  const maxWave = getAvailableWave();
+  const activeChords = CHORD_TYPES.filter(c => c.wave <= maxWave);
+
+  let html = '';
+
+  // Overall mastery
+  const allCards = Object.values(DB.cards).filter(c => c.due !== null);
+  const masteredCount = allCards.filter(isMastered).length;
+  const totalPossible = activeChords.length * 12;
+  const overallPct = Math.round((masteredCount / totalPossible) * 100);
+
+  html += `
+    <div class="stat-grid" style="margin-bottom:4px;">
+      <div class="stat-card gold"><div class="sv">${overallPct}%</div><div class="sl">Overall mastery</div></div>
+      <div class="stat-card"><div class="sv">${DB.meta.totalSessions||0}</div><div class="sl">Total sessions</div></div>
+      <div class="stat-card green"><div class="sv">${masteredCount}</div><div class="sl">Cards mastered</div></div>
+      <div class="stat-card blue"><div class="sv">${allCards.length}</div><div class="sl">Introduced</div></div>
+    </div>`;
+
+  // Per chord type
+  html += `<div class="summary-section-label" style="margin-top:8px;">By chord type</div>`;
+  activeChords.forEach(chord => {
+    const keyCards = CONCERT_KEYS.map(k => ({
+      k: k.c,
+      card: DB.cards[cardId(k.c, chord.id)]
+    }));
+    const mastered = keyCards.filter(({card}) => card && isMastered(card)).length;
+    const learning = keyCards.filter(({card}) => card && card.due !== null && !isMastered(card)).length;
+    const pctM = Math.round((mastered / 12) * 100);
+
+    html += `<div class="chord-mastery-item">
+      <div class="cmi-header">
+        <span class="cmi-name">${chord.name} <span style="color:var(--text3);font-size:12px;">(${chord.symbol})</span></span>
+        <span class="cmi-pct">${mastered}/12</span>
+      </div>
+      <div class="cmi-track"><div class="cmi-fill" style="width:${pctM}%"></div></div>
+      <div class="cmi-keys">${CONCERT_KEYS.map(({c:k}) => {
+        const card = DB.cards[cardId(k, chord.id)];
+        const cls = !card || card.due === null ? 'new'
+          : isMastered(card) ? 'mastered' : 'learning';
+        const wr = getWrittenKey(k, inst);
+        return `<span class="cmi-key ${cls}">${wr}</span>`;
+      }).join('')}</div>
+    </div>`;
+  });
+
+  // Unlock banner if close
+  if (maxWave < 3) {
+    const wave12 = CHORD_TYPES.filter(c => c.wave <= 2);
+    const totalW12 = wave12.length * 12;
+    const masteredW12 = wave12.reduce((acc, chord) =>
+      acc + CONCERT_KEYS.filter(k => {
+        const card = DB.cards[cardId(k.c, chord.id)];
+        return card && isMastered(card);
+      }).length, 0);
+    html += `<div class="unlock-banner">
+      <h3>Extensions unlock at ${totalW12} mastered</h3>
+      <p>You've mastered ${masteredW12}/${totalW12} core chord-key combinations.<br>
+      Keep going — 9ths, altered dominants, and sus chords are waiting.</p>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SETUP UI
+// ═══════════════════════════════════════════════════════════
+function setInst(btn) {
+  document.querySelectorAll('.seg-group .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  inst = btn.dataset.inst;
+  updateSetupSummary();
+}
+
+function adjustNew(delta) {
+  newPerSession = Math.max(5, Math.min(20, newPerSession + delta));
+  document.getElementById('new-count-display').textContent = newPerSession;
+  updateSetupSummary();
+}
+
+function updateSetupSummary() {
+  const dueCards = getDueCards();
+  const intro = buildIntroOrder();
+  const newToday = Math.min(newPerSession, intro.length);
+  const total = dueCards.length + newToday;
+
+  const allCards = Object.values(DB.cards).filter(c => c.due !== null);
+  const mastered = allCards.filter(isMastered).length;
+  const totalIntro = allCards.length;
+  const maxPossible = CHORD_TYPES.filter(c=>c.wave<=2).length * 12;
+  const pct = maxPossible > 0 ? Math.round((mastered / maxPossible) * 100) : 0;
+
+  document.getElementById('due-count').textContent = dueCards.length;
+  document.getElementById('new-today-count').textContent = newToday;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('deck-count').textContent = `${totalIntro} introduced / ${maxPossible} total`;
+  document.getElementById('mastery-pct').textContent = pct + '%';
+  document.getElementById('start-btn').disabled = total === 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportData() {
+  const json = JSON.stringify(DB, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `jazz_chord_srs_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function triggerImport() { document.getElementById('import-file').click(); }
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (!parsed.cards) throw new Error("Invalid file");
+      DB = parsed;
+      saveData();
+      inst = DB.settings.inst || "Eb";
+      newPerSession = DB.settings.newPerSession || 10;
+      // Sync instrument button
+      document.querySelectorAll('.seg-group .seg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.inst === inst);
+      });
+      document.getElementById('new-count-display').textContent = newPerSession;
+      updateSetupSummary();
+      alert("Progress imported successfully.");
+    } catch(err) { alert("Could not read file. Make sure it's a valid export."); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  showScreen('setup-screen');
+  updateSetupSummary();
+}
+
+function endSession() {
+  if (sessionQueue.length > 0) {
+    if (!confirm("End session early? Progress so far has been saved.")) return;
+  }
+  goHome();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+// Restore settings
+inst = DB.settings.inst || "Eb";
+newPerSession = DB.settings.newPerSession || 10;
+document.querySelectorAll('.seg-group .seg-btn').forEach(b => {
+  if (b.dataset.inst === inst) b.classList.add('active');
+  else b.classList.remove('active');
+});
+document.getElementById('new-count-display').textContent = newPerSession;
+updateSetupSummary();
+</script>
+</body>
+</html>
