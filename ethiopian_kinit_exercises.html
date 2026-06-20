@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kiñit">
+<title>Ethiopian Kiñit Exercises</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f4f0;
+    --bg3: #eeedea;
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #9a9893;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --blue-bg: #e6f1fb;
+    --blue-text: #0c447c;
+    --blue-border: #378add;
+    --teal-bg: #e1f5ee;
+    --teal-text: #085041;
+    --teal-border: #1d9e75;
+    --pink-bg: #fbeaf0;
+    --pink-text: #72243e;
+    --pink-border: #d4537e;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --text: #f2f2f7;
+      --text2: #aeaeb2;
+      --text3: #636366;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --blue-bg: #0c2d4a;
+      --blue-text: #b5d4f4;
+      --blue-border: #185fa5;
+      --teal-bg: #04342c;
+      --teal-text: #9fe1cb;
+      --teal-border: #0f6e56;
+      --pink-bg: #4b1528;
+      --pink-text: #f4c0d1;
+      --pink-border: #993556;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  header {
+    padding: 16px 16px 12px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .section { padding: 14px 16px 0; }
+
+  .section-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .root-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .root-btn {
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    background: var(--bg2);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+
+  .root-btn.active {
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    border-color: var(--blue-border);
+    font-weight: 500;
+  }
+
+  .kinit-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .kinit-scroll::-webkit-scrollbar { display: none; }
+
+  .kinit-tab {
+    cursor: pointer;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    white-space: nowrap;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+
+  .kinit-tab.active {
+    border: 1.5px solid var(--blue-border);
+    color: var(--blue-text);
+    background: var(--blue-bg);
+    font-weight: 500;
+  }
+
+  .new-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 20px;
+    background: var(--pink-bg);
+    color: var(--pink-text);
+    border: 0.5px solid var(--pink-border);
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  .scale-card {
+    margin: 12px 16px 0;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    background: var(--bg);
+  }
+
+  .scale-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .scale-name { font-size: 16px; font-weight: 600; }
+  .scale-ethi { font-size: 13px; color: var(--text2); margin-left: 6px; }
+  .scale-desc { font-size: 12px; color: var(--text3); text-align: right; line-height: 1.4; max-width: 160px; }
+
+  .note-pills {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .note-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 500;
+    border: 0.5px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text);
+  }
+  .note-pill.root { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
+  .note-pill.tone { background: var(--teal-bg); color: var(--teal-text); border-color: var(--teal-border); }
+  .note-pill.new-tone { background: var(--pink-bg); color: var(--pink-text); border-color: var(--pink-border); }
+  .note-pill.octave { opacity: 0.55; background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
+
+  .interval-sep { font-size: 10px; color: var(--text3); }
+
+  .semitone-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .semitone-label { font-size: 11px; color: var(--text3); }
+
+  .interval-badge {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--bg3);
+    color: var(--text2);
+    border: 0.5px solid var(--border);
+  }
+
+  .exercises-section { padding: 12px 16px 24px; }
+
+  .exercises-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+
+  .exercise-card {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    background: var(--bg);
+    margin-bottom: 10px;
+  }
+
+  .ex-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  .pattern-notes {
+    font-family: "Menlo", "Courier New", monospace;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.9;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ethiopian Kiñit</h1>
+  <p>Saxophone practice exercises</p>
+</header>
+
+<div class="section">
+  <div class="section-label">Root key</div>
+  <div class="root-btns" id="root-btns"></div>
+</div>
+
+<div class="section" style="margin-top:14px;">
+  <div class="section-label">Kiñit (mode)</div>
+  <div class="kinit-scroll" id="kinit-tabs"></div>
+</div>
+
+<div id="scale-display"></div>
+<div class="exercises-section" id="exercises-display"></div>
+
+<script>
+const KINITS = [
+  {
+    name: "Tizita Major", ethi: "ትዝታ",
+    intervals: [0,2,4,7,9], semitones: [2,2,3,2,3],
+    inames: ["W","W","W+H","W","W+H"],
+    desc: "Nostalgic, longing", isNew: false,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "1–3 skips", pattern: (s) => `${s[0]}–${s[2]}  ${s[1]}–${s[3]}  ${s[2]}–${s[4]}  ${s[3]}–${s[4]}'\n${s[4]}–${s[2]}  ${s[3]}–${s[1]}  ${s[2]}–${s[0]}` },
+      { title: "Triplet pattern (3+2)", pattern: (s) => `${s[0]} ${s[1]} ${s[2]} | ${s[3]} ${s[4]} ${s[0]}'\n${s[4]} ${s[3]} ${s[2]} | ${s[1]} ${s[0]} ${s[4]}` },
+      { title: "Pentatonic box (1–2–3–5)", pattern: (s) => `${s[0]} ${s[1]} ${s[2]} ${s[3]} ${s[2]} ${s[1]} ${s[0]}\n${s[1]} ${s[2]} ${s[3]} ${s[4]} ${s[3]} ${s[2]} ${s[1]}` },
+      { title: "Call & response", pattern: (s) => `Call:   ${s[3]} ${s[4]} ${s[3]} ${s[2]}  |\nAnswer: ${s[1]} ${s[0]} ${s[0]}       |` },
+    ]
+  },
+  {
+    name: "Tizita Minor", ethi: "ትዝታ (ጠነ)",
+    intervals: [0,2,3,7,9], semitones: [2,1,4,2,3],
+    inames: ["W","H","2W","W","W+H"],
+    desc: "Darker, melancholic", isNew: false,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "Emphasize the minor 3rd gap", pattern: (s) => `${s[1]}–${s[2]}  pause  ${s[1]}–${s[2]}  pause\n${s[0]}–${s[1]}–${s[2]}\n(feel the W→H→2W tension)` },
+      { title: "Stepwise then leap", pattern: (s) => `${s[0]} ${s[1]} ${s[2]} – ${s[4]}\n${s[4]} ${s[3]} ${s[2]} – ${s[0]}` },
+      { title: "Lower tetrachord focus", pattern: (s) => `${s[0]} ${s[1]} ${s[2]} ${s[3]}  ${s[2]} ${s[1]} ${s[0]}\nRepeat up one octave` },
+      { title: "Slurred pairs", pattern: (s) => `(${s[0]}–${s[1]}) (${s[2]}–${s[3]}) (${s[4]}–${s[3]}')\n(${s[3]}–${s[2]}) (${s[1]}–${s[0]}) rest` },
+    ]
+  },
+  {
+    name: "Anchihoye", ethi: "አንቺሆዬ",
+    intervals: [0,1,5,7,8], semitones: [1,4,2,1,4],
+    inames: ["H","2W","W","H","2W"],
+    desc: "Bright, celebratory", isNew: false,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "Half-step approach pattern", pattern: (s) => `${s[0]}–${s[1]} pause  ${s[3]}–${s[4]} pause\n${s[1]}–${s[2]}–${s[3]}–${s[4]}–${s[0]}'` },
+      { title: "Zigzag", pattern: (s) => `${s[0]} ${s[2]} ${s[1]} ${s[3]} ${s[2]} ${s[4]} ${s[3]} ${s[0]}'\n${s[0]}' ${s[3]} ${s[4]} ${s[2]} ${s[3]} ${s[1]} ${s[2]} ${s[0]}` },
+      { title: "Sustained (long–short–short)", pattern: (s) => `${s[0]}. ${s[1]} ${s[2]}  |  ${s[2]}. ${s[3]} ${s[4]}\n${s[4]}. ${s[3]} ${s[2]}  |  ${s[2]}. ${s[1]} ${s[0]}` },
+      { title: "4-note motif sequence", pattern: (s) => `${s[0]}${s[1]}${s[2]}${s[3]} | ${s[1]}${s[2]}${s[3]}${s[4]} | ${s[2]}${s[3]}${s[4]}${s[0]}'` },
+    ]
+  },
+  {
+    name: "Bati Major", ethi: "ባቲ",
+    intervals: [0,2,5,7,9], semitones: [2,3,2,2,3],
+    inames: ["W","W+H","W","W","W+H"],
+    desc: "Strong, dignified", isNew: false,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "Broken triads", pattern: (s) => `${s[0]}–${s[2]}–${s[4]}  ${s[1]}–${s[3]}–${s[0]}'\n${s[4]}–${s[2]}–${s[0]}  ${s[3]}–${s[1]}–${s[4]}` },
+      { title: "Sequences of 4", pattern: (s) => { let p=[...s,...s.map(n=>n+"'")]; return `${p[0]} ${p[1]} ${p[2]} ${p[3]} |\n${p[1]} ${p[2]} ${p[3]} ${p[4]} |\n${p[2]} ${p[3]} ${p[4]} ${p[5]}`; }},
+      { title: "Root–4th anchoring", pattern: (s) => `${s[0]} ${s[3]}  ${s[1]} ${s[3]}  ${s[2]} ${s[3]}  ${s[4]} ${s[3]}\n(emphasize the 4th as a drone)` },
+      { title: "Upper octave ornament", pattern: (s) => `${s[3]} ${s[4]} ${s[3]}  ${s[2]} ${s[3]} ${s[2]}\n${s[1]} ${s[2]} ${s[1]}  ${s[0]}` },
+    ]
+  },
+  {
+    name: "Bati Minor", ethi: "ባቲ (ጠነ)",
+    intervals: [0,2,4,6,9], semitones: [2,2,2,3,3],
+    inames: ["W","W","W","W+H","W+H"],
+    desc: "Bluesy, introspective", isNew: false,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "Whole-tone lower tetrachord", pattern: (s) => `${s[0]} ${s[1]} ${s[2]} ${s[3]}  ${s[2]} ${s[1]} ${s[0]}\n(4 whole steps — feel the float)` },
+      { title: "Upper tension resolution", pattern: (s) => `${s[3]} ${s[4]} ${s[0]}'  |  ${s[3]} ${s[2]} ${s[0]}\n${s[4]} ${s[3]} ${s[2]} ${s[1]} ${s[0]}` },
+      { title: "Pentatonic arpeggio", pattern: (s) => `${s[0]}–${s[2]}–${s[4]}–${s[2]}–${s[0]}\n${s[1]}–${s[3]}–${s[1]}–${s[3]}–${s[1]}` },
+      { title: "Long tones on each degree", pattern: (s) => s.map((n,i)=>`Degree ${i+1}: hold ${n} 4 beats → ${s[0]}`).join("\n") },
+    ]
+  },
+  {
+    name: "Ambassel", ethi: "አምባሰል",
+    intervals: [0,1,3,7,8], semitones: [1,2,4,1,4],
+    inames: ["H","W","2W","H","2W"],
+    desc: "Soulful, devotional — Wollo region", isNew: true,
+    exercises: [
+      { title: "Ascending & descending", pattern: (s) => `↑ ${s.join(" – ")} – ${s[s.length-1]}'\n↓ ${[...s].reverse().join(" – ")}` },
+      { title: "Opening half-step focus", pattern: (s) => `${s[0]}–${s[1]}  hold  ${s[0]}–${s[1]}–${s[2]}\n${s[2]}–${s[1]}–${s[0]}  hold\n(linger on the m2 — it defines this kiñit)` },
+      { title: "Wide leap exercise (aug 4th)", pattern: (s) => `${s[1]} – ${s[3]}  pause  ${s[1]} – ${s[3]}\n${s[0]} – ${s[3]} – ${s[4]} – ${s[3]} – ${s[0]}'` },
+      { title: "Devotional long tones", pattern: (s) => `${s[0]}.... ${s[1]}.... ${s[3]}.... ${s[4]}....\n${s[4]}.... ${s[3]}.... ${s[1]}.... ${s[0]}....` },
+      { title: "Call & response (Wollo style)", pattern: (s) => `Call:   ${s[0]} ${s[1]} ${s[2]} ${s[3]}  |\nAnswer: ${s[4]} ${s[3]} ${s[1]} ${s[0]}  |\nCall:   ${s[3]} ${s[4]} ${s[3]} ${s[1]}  |\nAnswer: ${s[0]}            |` },
+    ]
+  }
+];
+
+const NOTES = ["C","C#/D♭","D","D#/E♭","E","F","F#/G♭","G","G#/A♭","A","A#/B♭","B"];
+const ROOTS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+let currentRoot = 0;
+let currentKinit = 0;
+
+function getScale(rootIdx, intervals) {
+  return intervals.map(i => NOTES[(rootIdx + i) % 12]);
+}
+
+function renderRootBtns() {
+  document.getElementById("root-btns").innerHTML =
+    ROOTS.map((r,i) => `<button class="root-btn${i===currentRoot?' active':''}" onclick="setRoot(${i})">${r}</button>`).join("");
+}
+
+function renderKinitTabs() {
+  document.getElementById("kinit-tabs").innerHTML =
+    KINITS.map((k,i) => `<button class="kinit-tab${i===currentKinit?' active':''}" onclick="setKinit(${i})">${k.name}${k.isNew?'<span class="new-badge">new</span>':''}</button>`).join("");
+}
+
+function renderScale() {
+  const k = KINITS[currentKinit];
+  const scale = getScale(currentRoot, k.intervals);
+  const pillClass = k.isNew ? 'new-tone' : 'tone';
+  document.getElementById("scale-display").innerHTML = `
+    <div class="scale-card">
+      <div class="scale-header">
+        <div><span class="scale-name">${k.name}</span><span class="scale-ethi">${k.ethi}</span></div>
+        <span class="scale-desc">${k.desc}</span>
+      </div>
+      <div class="note-pills">
+        ${scale.map((n,i) => `<div class="note-pill ${i===0?'root':pillClass}">${n}</div>${i<scale.length-1?`<span class="interval-sep">${k.inames[i]}</span>`:''}`).join("")}
+        <div class="note-pill octave">${scale[0]}'</div>
+      </div>
+      <div class="semitone-row">
+        <span class="semitone-label">Semitones:</span>
+        ${k.semitones.map(s=>`<span class="interval-badge">${s}</span>`).join('<span class="semitone-label">→</span>')}
+      </div>
+    </div>`;
+}
+
+function renderExercises() {
+  const k = KINITS[currentKinit];
+  const scale = getScale(currentRoot, k.intervals);
+  document.getElementById("exercises-display").innerHTML =
+    `<div class="exercises-label">Patterns in ${ROOTS[currentRoot]}</div>` +
+    k.exercises.map((ex,i) => `
+      <div class="exercise-card">
+        <div class="ex-title">Exercise ${i+1}: ${ex.title}</div>
+        <pre class="pattern-notes">${ex.pattern(scale)}</pre>
+      </div>`).join("");
+}
+
+function setRoot(i) { currentRoot=i; renderRootBtns(); renderScale(); renderExercises(); }
+function setKinit(i) { currentKinit=i; renderKinitTabs(); renderScale(); renderExercises(); }
+
+renderRootBtns(); renderKinitTabs(); renderScale(); renderExercises();
+</script>
+</body>
+</html>
